@@ -40,11 +40,8 @@ router.get('/profile', authMiddleware, async (req, res) => {
   res.json(user);
 });
 
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const CryptoJS = require('crypto-js');
-const User = require('../models/User');
+
+
 
 
 router.get('/profile', async (req, res) => {
