@@ -1,44 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
-const authenticateToken = require('../middleware/authMiddleware');  // ✅ Import the middleware
+const authMiddleware = require('../middleware/authMiddleware');
 
-// ✅ Get all orders (only orders belonging to the logged-in user)
-router.get('/orders', authenticateToken, async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.user.id }).sort({ date: -1 });  // ✅ Only user's orders
-    res.json(orders);
-  } catch (err) {
-    console.error('Error fetching orders:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
+// Get orders for logged-in user
+router.get('/', authMiddleware, async (req, res) => {
+  const orders = await Order.find({ user: req.userId });
+  res.json(orders);
 });
 
-// ✅ Add new order (only if authenticated)
-router.post('/orders', authenticateToken, async (req, res) => {
-  try {
-    const { title, trackingNumber, status, date } = req.body;
-
-    if (!title || !trackingNumber) {
-      return res.status(400).json({ message: 'Title and tracking number are required.' });
-    }
-
-    const newOrder = new Order({
-      title,
-      trackingNumber,
-      status,
-      date,
-      userId: req.user.id,  // ✅ Save the user who created the order
-    });
-
-    await newOrder.save();
-    res.status(201).json(newOrder);
-
-  } catch (err) {
-    console.error('Error saving order:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
+// Add new order
+router.post('/', authMiddleware, async (req, res) => {
+  const { title, trackingNumber, status, date } = req.body;
+  const newOrder = new Order({ title, trackingNumber, status, date, user: req.userId });
+  await newOrder.save();
+  res.json(newOrder);
 });
 
 module.exports = router;
-
