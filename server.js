@@ -3,18 +3,16 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
+const authRoutes = require('./routes/auth');
+const orderRoutes = require('./routes/orders');
+
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
-
-// Routes
-const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
 
-app.listen(process.env.PORT || 5000, () => {
-  console.log('Server running on port', process.env.PORT || 5000);
-});
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => app.listen(process.env.PORT || 5000, () => console.log('✅ Backend running...')))
+  .catch(err => console.log(err));
